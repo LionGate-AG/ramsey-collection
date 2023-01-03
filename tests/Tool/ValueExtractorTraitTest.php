@@ -88,4 +88,38 @@ class ValueExtractorTraitTest extends TestCase
 
         $this->assertSame('works!', $test('testProperty'), 'Could not extract value by property');
     }
+
+    public function testShouldExtractValueByPropertyGetter(): void
+    {
+        $test = new class {
+            use ValueExtractorTrait;
+
+            /**
+             * @param string $name Property name
+             *
+             * @return mixed
+             */
+            public function __get(string $name)
+            {
+                if ($name === 'testProperty') {
+                    return 'works!';
+                }
+            }
+
+            /**
+             * @return mixed
+             */
+            public function __invoke(string $propertyOrMethod)
+            {
+                return $this->extractValue($this, $propertyOrMethod);
+            }
+
+            public function getType(): string
+            {
+                return 'baz';
+            }
+        };
+
+        $this->assertSame('works!', $test('testProperty'), 'Could not extract value by property getter');
+    }
 }

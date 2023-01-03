@@ -16,11 +16,11 @@ namespace Ramsey\Collection\Tool;
 
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 use Ramsey\Collection\Exception\UnsupportedOperationException;
+use Throwable;
 
 use function is_array;
 use function is_object;
 use function method_exists;
-use function property_exists;
 use function sprintf;
 
 /**
@@ -64,10 +64,21 @@ trait ValueExtractorTrait
             ));
         }
 
-        if (property_exists($element, $propertyOrMethod)) {
+        /**
+         * Access property of collected class directly or
+         * trigger calls to getter/accessor and fail silently
+         * so we can continue checking for a method.
+         */
+        // phpcs:disable
+        try {
             return $element->$propertyOrMethod;
+            // @phpstan-ignore-next-line
+        } catch (Throwable $e) {
+            // @ignoreException
         }
+        // phpcs:enable
 
+        // @phpstan-ignore-next-line
         if (method_exists($element, $propertyOrMethod)) {
             return $element->{$propertyOrMethod}();
         }
