@@ -234,6 +234,32 @@ abstract class AbstractCollection extends AbstractArray implements CollectionInt
     }
 
     /**
+     * @param callable(T, array-key): TCallbackReturn $callback A callable to apply to each
+     *     item of the collection.
+     *
+     * @return CollectionInterface<TCallbackReturn>
+     *
+     * @template TMapWithKeysKey of array-key
+     * @template TMapWithKeysValue
+     * @template TCallbackReturn of array<TMapWithKeysKey, TMapWithKeysValue>
+     */
+    public function mapWithKeys(callable $callback): CollectionInterface
+    {
+        $result = [];
+
+        foreach ($this->data as $key => $value) {
+            $assoc = $callback($value, $key);
+
+            foreach ($assoc as $mapKey => $mapValue) {
+                $result[$mapKey] = $mapValue;
+            }
+        }
+
+        /** @var Collection<TCallbackReturn> */
+        return new Collection('mixed', $result);
+    }
+
+    /**
      * @param callable(TCarry, T): TCarry $callback A callable to apply to each
      *     item of the collection to reduce it to a single value.
      * @param TCarry $initial This is the initial value provided to the callback.
